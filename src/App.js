@@ -7,18 +7,41 @@ function App() {
   const [lista, setLista] = useState([]);
   const [prezziTemporanei, setPrezziTemporanei] = useState({});
   const [editMode, setEditMode] = useState({});
+  const [ticketValore, setTicketValore] = useState(0); // Stato per i ticket assegnati
   const [utente, setUtente] = useState(null); // Sessione in background
 
   useEffect(() => {
-    const utenteSalvato = sessionStorage.getItem("utente");
+    const utenteSalvato = localStorage.getItem("utente");
     if (utenteSalvato) {
       setUtente(JSON.parse(utenteSalvato));
     } else {
       const nuovoUtente = { nome: "Utente" };
-      sessionStorage.setItem("utente", JSON.stringify(nuovoUtente));
+      localStorage.setItem("utente", JSON.stringify(nuovoUtente));
       setUtente(nuovoUtente);
     }
   }, []);
+
+  useEffect(() => {
+    const listaSalvata = localStorage.getItem("listaProdotti");
+    if (listaSalvata) {
+      setLista(JSON.parse(listaSalvata));
+    }
+
+    // Carica anche il valore dei ticket dal localStorage
+    const ticketSalvato = localStorage.getItem("ticketValore");
+    if (ticketSalvato) {
+      setTicketValore(parseFloat(ticketSalvato));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("listaProdotti", JSON.stringify(lista));
+  }, [lista]);
+
+  // Salva anche il valore dei ticket nel localStorage quando cambia
+  useEffect(() => {
+    localStorage.setItem("ticketValore", ticketValore);
+  }, [ticketValore]);
 
   const aggiungiProdotto = () => {
     if (prodotto) {
@@ -85,11 +108,13 @@ function App() {
     setLista([]);
   };
 
+  // Calcola il totale e il numero di buoni pasto
   const totale = lista.reduce((acc, item) => acc + (item.prezzo || 0) * (item.quantità || 1), 0);
+  const numeroBuoni = Math.floor(totale / 7.6);
 
   return (
     <div className="container-fluid py-4 px-3">
-      <div style={{ backgroundColor: "white", width: "47vw", margin: "0 auto", borderRadius: "10em" }} className="mb-4 d-flex justify-content-center align-items-center">
+      <div style={{ backgroundColor: "white", width: "50vw", margin: "0 auto", borderRadius: "10em" }} className="mb-4 d-flex justify-content-center align-items-center">
         <img style={{ width: "14vw", height: "14vw" }} src="https://cdn-icons-png.flaticon.com/512/3081/3081840.png" className="img-fluid rounded-top" alt="" />
         <h1 className="text-center">
           <b>SpesaMi</b>
@@ -137,7 +162,7 @@ function App() {
                   )}
                 </td>
                 <td>
-                  <div className="btn-group">
+                  <div className="btn-group d-flex align-items-center">
                     <button className="btn btn-outline-secondary btn-sm" onClick={() => cambiaQuantita(index, -1)}>
                       -
                     </button>
@@ -151,7 +176,7 @@ function App() {
                   <div className="d-flex flex-column flex-md-row gap-2 justify-content-center">
                     {item.prezzo !== null && !editMode[index] && (
                       <button className="btn btn-warning btn-sm" onClick={() => attivaModificaPrezzo(index)}>
-                        ✏️ Modifica Prezzo
+                        ✏️ Modifica
                       </button>
                     )}
                     <button className="btn btn-danger btn-sm" onClick={() => rimuoviProdotto(index)}>
@@ -178,10 +203,10 @@ function App() {
       <div className="mt-4 p-3 border rounded bg-light text-center">
         <h5>💳 Buoni Pasto</h5>
         <p>
-          Puoi usare <strong>{Math.floor(totale / 7.6)}</strong> buono/i pasto da 7,60€.
+          Puoi usare <strong>{numeroBuoni}</strong> buono/i pasto da 7,60€.
         </p>
         <p>
-          Differenza da pagare: <strong>€{(totale - Math.floor(totale / 7.6) * 7.6).toFixed(2)}</strong>
+          Differenza da pagare: <strong>€{(totale - numeroBuoni * 7.6).toFixed(2)}</strong>
         </p>
       </div>
 
