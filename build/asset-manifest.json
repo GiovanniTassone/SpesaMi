@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/SpesaMi/static/css/main.b77bc854.css",
+    "main.js": "/SpesaMi/static/js/main.430662fe.js",
+    "static/js/453.c23e5ced.chunk.js": "/SpesaMi/static/js/453.c23e5ced.chunk.js",
+    "index.html": "/SpesaMi/index.html",
+    "main.b77bc854.css.map": "/SpesaMi/static/css/main.b77bc854.css.map",
+    "main.430662fe.js.map": "/SpesaMi/static/js/main.430662fe.js.map",
+    "453.c23e5ced.chunk.js.map": "/SpesaMi/static/js/453.c23e5ced.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b77bc854.css",
+    "static/js/main.430662fe.js"
+  ]
+}
