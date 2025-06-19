@@ -13,7 +13,8 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "https://GiovanniTassone.github.io/SpesaMi",
+ "homepage": "https://giovannitassone.github.io/SpesaMi",
+
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
