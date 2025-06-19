@@ -1,3 +1,4 @@
+// App.js
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -7,15 +8,16 @@ function App() {
   const [lista, setLista] = useState([]);
   const [prezziTemporanei, setPrezziTemporanei] = useState({});
   const [editMode, setEditMode] = useState({});
-  const [ticketValore, setTicketValore] = useState(0); // Stato per i ticket assegnati
-  const [utente, setUtente] = useState(null); // Sessione in background
+  const [ticketValore, setTicketValore] = useState(7.6); // numero per i calcoli
+  const [ticketInput, setTicketInput] = useState("7.6"); // stringa per l'input
+  const [utente, setUtente] = useState(null);
 
   useEffect(() => {
     const utenteSalvato = localStorage.getItem("utente");
     if (utenteSalvato) {
       setUtente(JSON.parse(utenteSalvato));
     } else {
-      const nuovoUtente = { nome: "Utente" };
+      const nuovoUtente = { nome: "Utente" }; // puoi estendere con un ID unico se serve
       localStorage.setItem("utente", JSON.stringify(nuovoUtente));
       setUtente(nuovoUtente);
     }
@@ -26,22 +28,28 @@ function App() {
     if (listaSalvata) {
       setLista(JSON.parse(listaSalvata));
     }
-
-    // Carica anche il valore dei ticket dal localStorage
-    const ticketSalvato = localStorage.getItem("ticketValore");
-    if (ticketSalvato) {
-      setTicketValore(parseFloat(ticketSalvato));
-    }
   }, []);
 
   useEffect(() => {
     localStorage.setItem("listaProdotti", JSON.stringify(lista));
   }, [lista]);
 
-  // Salva anche il valore dei ticket nel localStorage quando cambia
+  // Carica ticketValore specifico per utente
   useEffect(() => {
-    localStorage.setItem("ticketValore", ticketValore);
-  }, [ticketValore]);
+    if (utente) {
+      const ticketSalvato = localStorage.getItem(`ticketValore_${utente.nome}`);
+      if (ticketSalvato) {
+        setTicketValore(parseFloat(ticketSalvato));
+      }
+    }
+  }, [utente]);
+
+  // Salva ticketValore specifico per utente
+  useEffect(() => {
+    if (utente) {
+      localStorage.setItem(`ticketValore_${utente.nome}`, ticketValore);
+    }
+  }, [ticketValore, utente]);
 
   const aggiungiProdotto = () => {
     if (prodotto) {
@@ -108,13 +116,20 @@ function App() {
     setLista([]);
   };
 
-  // Calcola il totale e il numero di buoni pasto
   const totale = lista.reduce((acc, item) => acc + (item.prezzo || 0) * (item.quantità || 1), 0);
-  const numeroBuoni = Math.floor(totale / 7.6);
+  const numeroBuoni = Math.floor(totale / ticketValore);
 
   return (
     <div className="container-fluid py-4 px-3">
-      <div style={{ backgroundColor: "white", width: "50vw", margin: "0 auto", borderRadius: "10em" }} className="mb-4 d-flex justify-content-center align-items-center">
+      <div
+        style={{
+          backgroundColor: "white",
+          width: "50vw",
+          margin: "0 auto",
+          borderRadius: "10em",
+        }}
+        className="mb-4 d-flex justify-content-center align-items-center"
+      >
         <img style={{ width: "14vw", height: "14vw" }} src="https://cdn-icons-png.flaticon.com/512/3081/3081840.png" className="img-fluid rounded-top" alt="" />
         <h1 className="text-center">
           <b>SpesaMi</b>
@@ -202,11 +217,29 @@ function App() {
 
       <div className="mt-4 p-3 border rounded bg-light text-center">
         <h5>💳 Buoni Pasto</h5>
+        <div className="mb-3">
+          <label className="form-label">Valore singolo buono pasto</label>
+          <input
+            type="number"
+            step="0.01"
+            className="form-control w-50 mx-auto"
+            value={ticketInput}
+            onChange={(e) => {
+              const raw = e.target.value.replace(",", "."); // gestisce virgola
+              setTicketInput(e.target.value); // aggiorna l’input
+
+              const parsed = parseFloat(raw);
+              if (!isNaN(parsed)) {
+                setTicketValore(parsed); // aggiorna solo se valido
+              }
+            }}
+          />
+        </div>
         <p>
-          Puoi usare <strong>{numeroBuoni}</strong> buono/i pasto da 7,60€.
+          Puoi usare <strong>{numeroBuoni}</strong> buono/i pasto da €{ticketValore.toFixed(2)}.
         </p>
         <p>
-          Differenza da pagare: <strong>€{(totale - numeroBuoni * 7.6).toFixed(2)}</strong>
+          Differenza da pagare: <strong>€{typeof ticketValore === "number" && !isNaN(ticketValore) ? (totale - numeroBuoni * ticketValore).toFixed(2) : "0.00"}</strong>
         </p>
       </div>
 
